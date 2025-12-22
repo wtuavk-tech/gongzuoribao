@@ -27,12 +27,12 @@ type TabType = '日报预警' | '预警通知' | '任务设定' | '任务' | '�
 // --- 配置项 ---
 
 const HEADER_TOOLTIPS: Record<string, string> = {
-  '400总接听量': '设定自动核算公式：正常类400客户量+其他类客户的总接听数',
-  '其它类客户占比': '设定自动核算公式：其他类400客户/400总接听量',
-  '正常类400客户占比': '设定自动核算公式：100%-其它类客户占比',
-  '预约单转化率': '设定自动核算公式：预约单录单量/预约单回访量',
-  '400电话转化率': '设定自动核算公式：400电话录单量/（400总接听数*正常类400客户占比比例）',
-  '线上转化率': '设定自动核算公式：线上录单量/线上正常咨询量'
+  '400总接听量': '正常类400客户量+其他类客户的总接听数',
+  '其它类客户占比': '其他类400客户/400总接听量',
+  '正常类400客户占比': '100%-其它类客户占比',
+  '预约单转化率': '预约单录单量/预约单回访量',
+  '400电话转化率': '400电话录单量/（400总接听数*正常类400客户占比比例）',
+  '线上转化率': '线上录单量/线上正常咨询量'
 };
 
 const TAB_CONFIGS: Record<TabType, { search: string[], headers: string[], color: string, bgColor: string, borderColor: string }> = {
@@ -147,7 +147,8 @@ const generateRows = (tab: TabType): any[] => {
          else if (h === '部门') row[h] = i % 2 === 0 ? '派单' : '客服';
          else if (h === '职级') row[h] = `P${Math.floor(Math.random() * 3) + 4}`;
          else if (h.includes('时间') || h.includes('日期')) {
-           row[h] = `2025-11-${String(20 - (i % 10)).padStart(2, '0')} 14:${String(10 + i).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`;
+           // yy.MM.dd HH:mm 格式
+           row[h] = `25.11.${String(20 - (i % 10)).padStart(2, '0')} 14:${String(10 + i).padStart(2, '0')}`;
          }
          else if (h === '应到人数' || h === '实到人数') row[h] = Math.floor(Math.random() * 10) + 20;
          else if (h === '平均单数') row[h] = Math.floor(Math.random() * 50) + 10;
@@ -425,6 +426,9 @@ const App = () => {
 
   const config = TAB_CONFIGS[activeTab];
   const data = useMemo(() => generateRows(activeTab), [activeTab]);
+  
+  // 工作日报使用更窄的间距 (7.5px * 2 = 15px interval)
+  const cellPadding = activeTab === '工作日报' ? 'px-[7.5px]' : 'px-5';
 
   return (
     <div className="h-screen bg-[#f1f4f9] p-4 flex flex-col overflow-hidden font-sans text-slate-800">
@@ -445,9 +449,9 @@ const App = () => {
           <table className="w-full text-left border-collapse min-w-[2000px]">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200">
               <tr className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                <th className="px-5 py-4 text-center w-16 border-r border-slate-100 whitespace-nowrap">序号</th>
+                <th className={`${cellPadding} py-4 text-center w-16 border-r border-slate-100 whitespace-nowrap`}>序号</th>
                 {config.headers.map(h => (
-                  <th key={h} className="px-5 py-4 min-w-[140px] border-r border-slate-100 group relative whitespace-nowrap">
+                  <th key={h} className={`${cellPadding} py-4 min-w-[140px] border-r border-slate-100 group relative whitespace-nowrap`}>
                     <div className="flex items-center gap-1">
                       {h}
                       {HEADER_TOOLTIPS[h] && (
@@ -463,7 +467,7 @@ const App = () => {
                     </div>
                   </th>
                 ))}
-                <th className="px-5 py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 whitespace-nowrap">操作</th>
+                <th className={`${cellPadding} py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 whitespace-nowrap`}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -472,9 +476,9 @@ const App = () => {
                   key={idx} 
                   className={`hover:bg-blue-50/50 transition-colors text-[13px] text-slate-600 h-12 ${idx % 2 === 1 ? 'bg-[#f8fbff]' : 'bg-white'}`}
                 >
-                  <td className="px-5 py-2 text-center border-r border-slate-100 font-medium text-slate-400">{(currentPage - 1) * pageSize + idx + 1}</td>
+                  <td className={`${cellPadding} py-2 text-center border-r border-slate-100 font-medium text-slate-400`}>{(currentPage - 1) * pageSize + idx + 1}</td>
                   {config.headers.map(h => (
-                    <td key={h} className={`px-5 py-2 border-r border-slate-100 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
+                    <td key={h} className={`${cellPadding} py-2 border-r border-slate-100 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
                       {h === '状态' || h === '是否生效' || h === '发布状态' || h === '完成状态' || h === '批注确认状态' ? (
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-tight shadow-sm ${
                           row[h] === '生效' || row[h] === '已完成' || row[h] === '已发布' 
@@ -486,7 +490,7 @@ const App = () => {
                       ) : row[h]}
                     </td>
                   ))}
-                  <td className={`px-5 py-2 text-center sticky right-0 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 ${idx % 2 === 1 ? 'bg-[#f8fbff]' : 'bg-white'}`}>
+                  <td className={`${cellPadding} py-2 text-center sticky right-0 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 ${idx % 2 === 1 ? 'bg-[#f8fbff]' : 'bg-white'}`}>
                     <div className="flex justify-center gap-4">
                       <button className="text-[#1890ff] hover:text-blue-700 flex items-center gap-1 font-bold transition-transform hover:scale-105">
                         <Edit size={14}/> {activeTab === '公告配置' ? '查看' : '修改'}
