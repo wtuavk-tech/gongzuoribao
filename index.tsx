@@ -13,7 +13,11 @@ import {
   Edit,
   History,
   LayoutGrid,
-  Filter
+  Filter,
+  HelpCircle,
+  X,
+  Clock,
+  Image as ImageIcon
 } from 'lucide-react';
 
 // --- 类型定义 ---
@@ -21,6 +25,15 @@ import {
 type TabType = '日报预警' | '预警通知' | '任务设定' | '任务' | '工作日报' | '公告配置';
 
 // --- 配置项 ---
+
+const HEADER_TOOLTIPS: Record<string, string> = {
+  '400总接听量': '设定自动核算公式：正常类400客户量+其他类客户的总接听数',
+  '其它类客户占比': '设定自动核算公式：其他类400客户/400总接听量',
+  '正常类400客户占比': '设定自动核算公式：100%-其它类客户占比',
+  '预约单转化率': '设定自动核算公式：预约单录单量/预约单回访量',
+  '400电话转化率': '设定自动核算公式：400电话录单量/（400总接听数*正常类400客户占比比例）',
+  '线上转化率': '设定自动核算公式：线上录单量/线上正常咨询量'
+};
 
 const TAB_CONFIGS: Record<TabType, { search: string[], headers: string[], color: string, bgColor: string, borderColor: string }> = {
   '日报预警': {
@@ -53,7 +66,15 @@ const TAB_CONFIGS: Record<TabType, { search: string[], headers: string[], color:
   },
   '工作日报': {
     search: ['职级', '填写人', '部门', '日报时间'],
-    headers: ['批注确认状态', '填写人', '部门', '应到人数', '实到人数', '平均单数', '职级', '填写时间', '日报时间', '电话量/咨询量', '总单数', '老兵单数', '加好友数', '出错数', '目标单数', '转化率', '情况说明', '明日计划', '批注'],
+    headers: [
+      '批注确认状态', '填写人', '部门', '应到人数', '实到人数', '平均单数', '职级', '填写时间', '日报时间',
+      '其它类400客户量', '正常类400客户量', '400总接听量', '其它类客户占比', '正常类400客户占比',
+      '预约单录单量', '预约单回访量', '预约单转化率',
+      '400电话录单量', '400电话转化率',
+      '线上录单量', '线上正常咨询量', '线上刷单咨询量', '线上转化率',
+      '月平均目标转化率', '明日计划录单量', '当日问题与建议',
+      '情况说明', '明日计划', '批注'
+    ],
     color: '#13c2c2',
     bgColor: '#e6fffb',
     borderColor: '#87e8de'
@@ -71,8 +92,77 @@ const TAB_CONFIGS: Record<TabType, { search: string[], headers: string[], color:
 
 const generateRows = (tab: TabType): any[] => {
   const config = TAB_CONFIGS[tab];
+  
   return Array.from({ length: 20 }).map((_, i) => {
     const row: any = { id: i + 1 };
+    
+    // 特殊处理工作日报的数据生成逻辑
+    if (tab === '工作日报') {
+      // 基础数据生成
+      const other400 = Math.floor(Math.random() * 100) + 20; // 其它类400客户量
+      const normal400 = Math.floor(Math.random() * 200) + 50; // 正常类400客户量
+      const appointRecord = Math.floor(Math.random() * 50) + 10; // 预约单录单量
+      const appointReturn = Math.floor(Math.random() * 50) + appointRecord; // 预约单回访量 (通常回访 >= 录单)
+      const phone400Record = Math.floor(Math.random() * 80) + 10; // 400电话录单量
+      const onlineRecord = Math.floor(Math.random() * 100) + 20; // 线上录单量
+      const onlineNormalConsult = Math.floor(Math.random() * 150) + onlineRecord; // 线上正常咨询量
+      const onlineFakeConsult = Math.floor(Math.random() * 50); // 线上刷单咨询量
+      const planRecord = Math.floor(Math.random() * 100) + 50; // 明日计划录单量
+      
+      // 公式计算
+      const total400 = normal400 + other400;
+      const otherRatio = total400 > 0 ? (other400 / total400) * 100 : 0;
+      const normalRatio = 100 - otherRatio;
+      const appointRatio = appointReturn > 0 ? (appointRecord / appointReturn) * 100 : 0;
+      
+      // 400电话转化率 = 400电话录单量 / （400总接听数 * 正常类400客户占比比例）
+      // 注意：正常类400客户占比比例 = normalRatio / 100
+      const phone400Denominator = total400 * (normalRatio / 100);
+      const phone400Ratio = phone400Denominator > 0 ? (phone400Record / phone400Denominator) * 100 : 0;
+      
+      const onlineRatio = onlineNormalConsult > 0 ? (onlineRecord / onlineNormalConsult) * 100 : 0;
+      const monthTargetRatio = (Math.random() * 30 + 10); // 月平均目标转化率随机
+
+      // 填充数据
+      config.headers.forEach(h => {
+         if (h === '其它类400客户量') row[h] = other400;
+         else if (h === '正常类400客户量') row[h] = normal400;
+         else if (h === '400总接听量') row[h] = total400;
+         else if (h === '其它类客户占比') row[h] = otherRatio.toFixed(2) + '%';
+         else if (h === '正常类400客户占比') row[h] = normalRatio.toFixed(2) + '%';
+         else if (h === '预约单录单量') row[h] = appointRecord;
+         else if (h === '预约单回访量') row[h] = appointReturn;
+         else if (h === '预约单转化率') row[h] = appointRatio.toFixed(2) + '%';
+         else if (h === '400电话录单量') row[h] = phone400Record;
+         else if (h === '400电话转化率') row[h] = phone400Ratio.toFixed(2) + '%';
+         else if (h === '线上录单量') row[h] = onlineRecord;
+         else if (h === '线上正常咨询量') row[h] = onlineNormalConsult;
+         else if (h === '线上刷单咨询量') row[h] = onlineFakeConsult;
+         else if (h === '线上转化率') row[h] = onlineRatio.toFixed(2) + '%';
+         else if (h === '月平均目标转化率') row[h] = monthTargetRatio.toFixed(2) + '%';
+         else if (h === '明日计划录单量') row[h] = planRecord;
+         else if (h === '当日问题与建议') row[h] = '无明显异常，建议增加晚班客服人数';
+         else if (h === '批注确认状态') row[h] = i % 2 === 0 ? '生效' : '失效'; // 复用原有逻辑
+         else if (h === '填写人') row[h] = i % 3 === 0 ? '管理员' : (i % 3 === 1 ? '陈序麟' : '李可');
+         else if (h === '部门') row[h] = i % 2 === 0 ? '派单' : '客服';
+         else if (h === '职级') row[h] = `P${Math.floor(Math.random() * 3) + 4}`;
+         else if (h.includes('时间') || h.includes('日期')) {
+           row[h] = `2025-11-${String(20 - (i % 10)).padStart(2, '0')} 14:${String(10 + i).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`;
+         }
+         else if (h === '应到人数' || h === '实到人数') row[h] = Math.floor(Math.random() * 10) + 20;
+         else if (h === '平均单数') row[h] = Math.floor(Math.random() * 50) + 10;
+         else if (h === '情况说明') row[h] = '--';
+         else if (h === '明日计划') row[h] = '继续跟进意向客户';
+         else if (h === '批注') row[h] = '--';
+         else {
+           // Fallback for other cols if any
+           if (!row[h]) row[h] = '--';
+         }
+      });
+      return row;
+    }
+
+    // 其他 Tab 的原有逻辑
     config.headers.forEach(h => {
       if (h.includes('时间') || h.includes('日期')) {
         row[h] = `2025-11-${String(20 - (i % 10)).padStart(2, '0')} 14:${String(10 + i).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`;
@@ -119,10 +209,10 @@ const NotificationBar = () => (
 );
 
 const TabSelector = ({ activeTab, onSelect }: { activeTab: TabType, onSelect: (t: TabType) => void }) => {
-  const tabs: TabType[] = ['日报预警', '预警通知', '任务设定', '任务', '工作日报', '公告配置'];
+  const tabList: TabType[] = ['日报预警', '预警通知', '任务设定', '任务', '工作日报', '公告配置'];
   return (
     <div className="grid grid-cols-6 gap-3 mb-3">
-      {tabs.map((tab) => {
+      {tabList.map((tab) => {
         const config = TAB_CONFIGS[tab];
         const isActive = activeTab === tab;
         return (
@@ -146,33 +236,64 @@ const TabSelector = ({ activeTab, onSelect }: { activeTab: TabType, onSelect: (t
   );
 };
 
-const DataOverview = ({ onToggleFilter, isFilterOpen }: { onToggleFilter: () => void, isFilterOpen: boolean }) => (
-  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex items-center shadow-sm h-14 mb-3">
-    <div className="flex items-center gap-3 px-6 flex-1">
-      <div className="flex items-center gap-3 mr-10 shrink-0">
-        <Activity size={20} className="text-[#1890ff]" />
-        <span className="text-[15px] font-bold text-slate-700 tracking-tight">数据概览</span>
+const DataOverview = ({ activeTab, onToggleFilter, isFilterOpen, onAdd }: { activeTab: TabType, onToggleFilter: () => void, isFilterOpen: boolean, onAdd: () => void }) => {
+  const defaultData = [['待审核数', '12', '#ff4d4f'], ['今日已审核', '45', '#1890ff'], ['当月已审核', '892', '#52c41a'], ['当年已审核', '12540', '#722ed1']];
+  
+  const workDailyData = [
+    ['其它类400客户量', '158', '#ff4d4f'],
+    ['正常类400客户量', '342', '#1890ff'],
+    ['400总接听量', '500', '#52c41a'],
+    ['其它类客户占比', '31.6%', '#722ed1'],
+    ['正常类400客户占比', '68.4%', '#13c2c2'],
+    ['预约单录单量', '85', '#faad14'],
+    ['预约单回访量', '80', '#eb2f96'],
+    ['预约单转化率', '94.1%', '#2f54eb'],
+    ['400电话录单量', '210', '#7cb305'],
+    ['400电话转化率', '42.0%', '#fa541c']
+  ];
+
+  const data = activeTab === '工作日报' ? workDailyData : defaultData;
+  const isWorkDaily = activeTab === '工作日报';
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex items-center shadow-sm h-14 mb-3">
+      <div className="flex items-center gap-3 px-6 flex-1 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-3 mr-6 shrink-0 sticky left-0 bg-white z-10 pr-4">
+          <Activity size={20} className="text-[#1890ff]" />
+          <span className="text-[15px] font-bold text-slate-700 tracking-tight whitespace-nowrap">数据概览</span>
+        </div>
+        <div className={`flex items-center ${isWorkDaily ? 'gap-6' : 'gap-14'} shrink-0`}>
+          {data.map(([label, val, color]) => (
+            <div key={label} className={`flex ${isWorkDaily ? 'flex-row items-baseline gap-1' : 'flex-col justify-center'} whitespace-nowrap`}>
+              <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{label}{isWorkDaily ? '：' : ''}</span>
+              <span className={`${isWorkDaily ? 'text-base' : 'text-xl'} font-bold font-mono leading-tight`} style={{ color }}>{val}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="flex gap-14">
-        {[['待审核数', '12', '#ff4d4f'], ['今日已审核', '45', '#1890ff'], ['当月已审核', '892', '#52c41a'], ['当年已审核', '12540', '#722ed1']].map(([label, val, color]) => (
-          <div key={label} className="flex flex-col justify-center">
-            <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{label}</span>
-            <span className="text-xl font-bold font-mono leading-tight" style={{ color }}>{val}</span>
-          </div>
-        ))}
+      
+      {/* 新增按钮移到这里 */}
+      <div className="h-full flex items-center border-l border-slate-100 pl-4 pr-2">
+        <button 
+          onClick={onAdd}
+          className="h-8 px-4 bg-[#1890ff] text-white rounded-lg text-[13px] font-bold flex items-center gap-1.5 hover:bg-blue-600 shadow-sm transition-all whitespace-nowrap"
+        >
+          <Plus size={16}/> {activeTab === '公告配置' ? '新建公告' : '新增'}
+        </button>
+      </div>
+
+      <div 
+        onClick={onToggleFilter}
+        className={`h-full px-8 flex items-center gap-2 font-bold text-[13px] cursor-pointer transition-all duration-300 shrink-0 z-10 ${
+          isFilterOpen ? 'bg-[#1890ff] text-white' : 'bg-[#f0f5ff] text-[#1890ff] hover:bg-[#e6f7ff]'
+        }`}
+      >
+        {isFilterOpen ? <Filter size={16} /> : <Search size={16} />}
+        <span>{isFilterOpen ? '收起高级筛选' : '点这高级筛选'}</span>
       </div>
     </div>
-    <div 
-      onClick={onToggleFilter}
-      className={`h-full px-8 flex items-center gap-2 font-bold text-[13px] cursor-pointer transition-all duration-300 border-l border-slate-100 ${
-        isFilterOpen ? 'bg-[#1890ff] text-white' : 'bg-[#f0f5ff] text-[#1890ff] hover:bg-[#e6f7ff]'
-      }`}
-    >
-      {isFilterOpen ? <Filter size={16} /> : <Search size={16} />}
-      <span>{isFilterOpen ? '收起高级筛选' : '点这高级筛选'}</span>
-    </div>
-  </div>
-);
+  );
+};
 
 const SearchPanel = ({ tab, isOpen }: { tab: TabType, isOpen: boolean }) => {
   if (!isOpen) return null;
@@ -207,9 +328,7 @@ const SearchPanel = ({ tab, isOpen }: { tab: TabType, isOpen: boolean }) => {
         </div>
 
         <div className="flex gap-2 shrink-0 border-l border-slate-100 pl-8">
-          <button className="h-8 px-4 bg-[#1890ff] text-white rounded-lg text-[12px] font-bold flex items-center gap-1.5 hover:bg-blue-600 shadow-sm transition-all">
-            <Plus size={16}/> {tab === '公告配置' ? '新建公告' : '新增'}
-          </button>
+          {/* 原“新增”按钮已移除 */}
           <button className="h-8 px-4 bg-[#52c41a] text-white rounded-lg text-[12px] font-bold flex items-center gap-1.5 hover:bg-green-600 shadow-sm transition-all">
             <FileSpreadsheet size={16}/> 导出
           </button>
@@ -231,9 +350,76 @@ const SearchPanel = ({ tab, isOpen }: { tab: TabType, isOpen: boolean }) => {
   );
 };
 
+const AddModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  if (!isOpen) return null;
+
+  const fields = [
+    "其它类400客户量",
+    "正常类400客户量",
+    "预约单录单量",
+    "预约单回访量",
+    "400电话录单量",
+    "线上录单量",
+    "线上正常咨询量",
+    "线上刷单咨询量",
+    "月平均目标转化率",
+    "明日计划录单量"
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+      <div className="bg-white w-[800px] rounded-lg shadow-2xl flex flex-col max-h-[90vh] animate-[scaleIn_0.2s_ease-out]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <span className="text-[16px] font-bold text-slate-800">新增</span>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+        
+        {/* Body */}
+        <div className="p-8 overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+            
+            {/* 循环生成普通输入字段 */}
+            {fields.map(label => (
+              <div key={label} className="flex items-center">
+                <label className="w-32 text-right text-[13px] text-slate-600 font-medium mr-4 flex justify-end gap-1 shrink-0">
+                  <span className="text-red-500">*</span> {label}
+                </label>
+                <input type="text" placeholder="请输入内容" className="flex-1 h-9 border border-slate-200 rounded px-3 text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all placeholder:text-slate-300" />
+              </div>
+            ))}
+
+            {/* 当日问题与建议 - 全宽 */}
+            <div className="col-span-2 flex items-start">
+              <label className="w-32 text-right text-[13px] text-slate-600 font-medium mr-4 mt-2 flex justify-end gap-1 shrink-0">
+                 <span className="text-red-500">*</span> 当日问题与建议
+              </label>
+              <textarea placeholder="请输入内容" className="flex-1 h-24 border border-slate-200 rounded p-3 text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all resize-none placeholder:text-slate-300"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50 rounded-b-lg">
+          <button onClick={onClose} className="px-6 py-2 border border-slate-200 bg-white text-slate-600 text-[13px] rounded hover:bg-slate-50 hover:border-slate-300 transition-all">取消</button>
+          <button className="px-6 py-2 bg-[#1890ff] text-white text-[13px] rounded hover:bg-blue-600 shadow-sm transition-all">确定</button>
+        </div>
+      </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
+    </div>
+  );
+};
+
 const App = () => {
   const [activeTab, setActiveTab] = useState<TabType>('日报预警');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
@@ -244,19 +430,40 @@ const App = () => {
     <div className="h-screen bg-[#f1f4f9] p-4 flex flex-col overflow-hidden font-sans text-slate-800">
       <NotificationBar />
       <TabSelector activeTab={activeTab} onSelect={(t) => { setActiveTab(t); setCurrentPage(1); }} />
-      <DataOverview isFilterOpen={isFilterOpen} onToggleFilter={() => setIsFilterOpen(!isFilterOpen)} />
+      <DataOverview 
+        activeTab={activeTab} 
+        isFilterOpen={isFilterOpen} 
+        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)} 
+        onAdd={() => setIsAddModalOpen(true)}
+      />
       <SearchPanel tab={activeTab} isOpen={isFilterOpen} />
       
+      <AddModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 flex-1 flex flex-col overflow-hidden">
         <div className="overflow-auto flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[2000px]">
             <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200">
-              <tr className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">
-                <th className="px-5 py-4 text-center w-16 border-r border-slate-100">序号</th>
+              <tr className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                <th className="px-5 py-4 text-center w-16 border-r border-slate-100 whitespace-nowrap">序号</th>
                 {config.headers.map(h => (
-                  <th key={h} className="px-5 py-4 min-w-[140px] border-r border-slate-100">{h}</th>
+                  <th key={h} className="px-5 py-4 min-w-[140px] border-r border-slate-100 group relative whitespace-nowrap">
+                    <div className="flex items-center gap-1">
+                      {h}
+                      {HEADER_TOOLTIPS[h] && (
+                        // 将 Tooltip 改为显示在下方 (top-full mt-2)，并调整箭头
+                        <div className="relative group cursor-help">
+                          <HelpCircle size={12} className="text-slate-400 hover:text-blue-500" />
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block w-48 bg-slate-800 text-white text-[10px] p-2 rounded shadow-lg z-50 text-center font-normal leading-relaxed whitespace-normal">
+                            {HEADER_TOOLTIPS[h]}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-800"></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </th>
                 ))}
-                <th className="px-5 py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100">操作</th>
+                <th className="px-5 py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 whitespace-nowrap">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -267,7 +474,7 @@ const App = () => {
                 >
                   <td className="px-5 py-2 text-center border-r border-slate-100 font-medium text-slate-400">{(currentPage - 1) * pageSize + idx + 1}</td>
                   {config.headers.map(h => (
-                    <td key={h} className={`px-5 py-2 border-r border-slate-100 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h === '转化率' ? 'text-center font-mono' : ''}`}>
+                    <td key={h} className={`px-5 py-2 border-r border-slate-100 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
                       {h === '状态' || h === '是否生效' || h === '发布状态' || h === '完成状态' || h === '批注确认状态' ? (
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-tight shadow-sm ${
                           row[h] === '生效' || row[h] === '已完成' || row[h] === '已发布' 
