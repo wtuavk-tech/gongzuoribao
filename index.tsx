@@ -214,19 +214,15 @@ const TabSelector = ({ activeTab, onSelect }: { activeTab: TabType, onSelect: (t
   return (
     <div className="grid grid-cols-6 gap-3 mb-3">
       {tabList.map((tab) => {
-        const config = TAB_CONFIGS[tab];
         const isActive = activeTab === tab;
         return (
           <button
             key={tab}
             onClick={() => onSelect(tab)}
-            style={{ 
-              backgroundColor: isActive ? config.color : config.bgColor,
-              borderColor: config.borderColor,
-              color: isActive ? '#fff' : config.color
-            }}
             className={`h-11 border rounded-xl text-[13px] font-bold transition-all duration-200 flex items-center justify-center px-4 shadow-sm hover:scale-[1.02] active:scale-[0.98] ${
-              isActive ? 'shadow-md ring-2 ring-offset-1 ring-slate-100' : ''
+              isActive 
+                ? 'bg-[#1890ff] text-white border-[#1890ff] shadow-md ring-2 ring-offset-1 ring-blue-200' 
+                : 'bg-[#F0F9FE] text-[#1890ff] border-[#93c5fd] hover:border-[#1890ff]' 
             }`}
           >
             {tab}
@@ -447,11 +443,11 @@ const App = () => {
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 flex-1 flex flex-col overflow-hidden">
         <div className="overflow-auto flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[2000px]">
-            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200">
+            <thead className="sticky top-0 z-20 bg-slate-50 border-b border-[#cbd5e1]">
               <tr className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                <th className={`${cellPadding} py-4 text-center w-16 border-r border-slate-100 whitespace-nowrap`}>序号</th>
+                <th className={`${cellPadding} py-4 text-center w-16 border-r border-[#cbd5e1] whitespace-nowrap`}>序号</th>
                 {config.headers.map(h => (
-                  <th key={h} className={`${cellPadding} py-4 min-w-[140px] border-r border-slate-100 group relative whitespace-nowrap`}>
+                  <th key={h} className={`${cellPadding} py-4 min-w-[140px] border-r border-[#cbd5e1] group relative whitespace-nowrap`}>
                     <div className="flex items-center gap-1">
                       {h}
                       {HEADER_TOOLTIPS[h] && (
@@ -467,18 +463,18 @@ const App = () => {
                     </div>
                   </th>
                 ))}
-                <th className={`${cellPadding} py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 whitespace-nowrap`}>操作</th>
+                <th className={`${cellPadding} py-4 w-36 text-center sticky right-0 bg-slate-50 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-[#cbd5e1] whitespace-nowrap`}>操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#cbd5e1]">
               {data.map((row, idx) => (
                 <tr 
                   key={idx} 
-                  className={`hover:bg-blue-50/50 transition-colors text-[13px] text-slate-600 h-12 ${idx % 2 === 1 ? 'bg-[#f8fbff]' : 'bg-white'}`}
+                  className={`hover:bg-blue-50/50 transition-colors text-[13px] text-slate-600 h-12 ${idx % 2 === 1 ? 'bg-[#F0F9FE]' : 'bg-white'}`}
                 >
-                  <td className={`${cellPadding} py-2 text-center border-r border-slate-100 font-medium text-slate-400`}>{(currentPage - 1) * pageSize + idx + 1}</td>
+                  <td className={`${cellPadding} py-2 text-center border-r border-[#cbd5e1] font-medium text-slate-400`}>{(currentPage - 1) * pageSize + idx + 1}</td>
                   {config.headers.map(h => (
-                    <td key={h} className={`${cellPadding} py-2 border-r border-slate-100 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
+                    <td key={h} className={`${cellPadding} py-2 border-r border-[#cbd5e1] truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
                       {h === '状态' || h === '是否生效' || h === '发布状态' || h === '完成状态' || h === '批注确认状态' ? (
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-tight shadow-sm ${
                           row[h] === '生效' || row[h] === '已完成' || row[h] === '已发布' 
@@ -490,7 +486,7 @@ const App = () => {
                       ) : row[h]}
                     </td>
                   ))}
-                  <td className={`${cellPadding} py-2 text-center sticky right-0 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-slate-100 ${idx % 2 === 1 ? 'bg-[#f8fbff]' : 'bg-white'}`}>
+                  <td className={`${cellPadding} py-2 text-center sticky right-0 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] border-l border-[#cbd5e1] ${idx % 2 === 1 ? 'bg-[#F0F9FE]' : 'bg-white'}`}>
                     <div className="flex justify-center gap-4">
                       <button className="text-[#1890ff] hover:text-blue-700 flex items-center gap-1 font-bold transition-transform hover:scale-105">
                         <Edit size={14}/> {activeTab === '公告配置' ? '查看' : '修改'}
