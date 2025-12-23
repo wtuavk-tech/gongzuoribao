@@ -5,6 +5,7 @@ import {
   Search, 
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Bell,
   Plus,
   FileSpreadsheet,
@@ -503,19 +504,36 @@ const App = () => {
         </div>
 
         {/* 分页组件 */}
-        <div className="px-6 py-3 border-t border-slate-200 flex items-center justify-between text-[13px] bg-white">
-          <div className="text-slate-500 font-medium">显示第 {(currentPage-1)*pageSize + 1} 到 {currentPage*pageSize} 条，共 <span className="text-[#1890ff] font-bold">{data.length}</span> 条</div>
-          <div className="flex items-center gap-5">
-            <div className="flex gap-2">
-              <button className="w-8 h-8 border border-slate-200 rounded-lg flex items-center justify-center bg-white hover:bg-slate-50 hover:border-blue-300 transition-all"><ChevronLeft size={16} className="text-slate-400"/></button>
-              <button className="w-8 h-8 rounded-lg font-bold bg-[#1890ff] text-white shadow-md">1</button>
-              <button className="w-8 h-8 border border-slate-200 rounded-lg flex items-center justify-center bg-white hover:bg-slate-50 hover:border-blue-300 transition-all"><ChevronRight size={16} className="text-slate-400"/></button>
-            </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <span>前往第</span>
-              <input type="number" defaultValue={1} className="w-10 h-8 border border-slate-200 rounded-lg text-center font-bold outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400" />
-              <span>页</span>
-            </div>
+        <div className="px-6 py-3 border-t border-slate-200 flex items-center justify-center gap-4 text-[13px] bg-white">
+          <span className="text-slate-500">共 128 条</span>
+          <div className="flex items-center justify-between border border-slate-200 rounded px-2 h-7 min-w-[90px] cursor-pointer hover:border-blue-400 transition-all">
+            <span className="text-slate-600">20条/页</span>
+            <ChevronDown size={14} className="text-slate-400" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button className="w-7 h-7 border border-slate-200 rounded-md flex items-center justify-center bg-white hover:border-blue-400 hover:text-blue-500 transition-all text-slate-400">
+               <ChevronLeft size={14} />
+            </button>
+            {[1, 2, 3, 4, 5, 6, 7].map(page => (
+              <button 
+                key={page} 
+                className={`w-7 h-7 border rounded-md flex items-center justify-center text-[13px] font-medium transition-all ${
+                  page === 1 
+                    ? 'bg-[#1890ff] text-white border-[#1890ff]' 
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-500'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button className="w-7 h-7 border border-slate-200 rounded-md flex items-center justify-center bg-white hover:border-blue-400 hover:text-blue-500 transition-all text-slate-400">
+               <ChevronRight size={14} />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-slate-500">
+            <span>前往</span>
+            <input type="text" defaultValue="1" className="w-10 h-7 border border-slate-200 rounded-md text-center text-[13px] outline-none focus:border-[#1890ff] transition-all" />
+            <span>页</span>
           </div>
         </div>
       </div>
