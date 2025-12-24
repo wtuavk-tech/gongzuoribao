@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
@@ -472,20 +473,24 @@ const App = () => {
                   key={idx} 
                   className={`hover:bg-blue-50/50 transition-colors text-[13px] text-slate-600 h-12 ${idx % 2 === 1 ? 'bg-[#F0F9FE]' : 'bg-white'}`}
                 >
-                  <td className={`${cellPadding} py-2 text-center font-medium text-slate-400`}>{(currentPage - 1) * pageSize + idx + 1}</td>
-                  {config.headers.map(h => (
-                    <td key={h} className={`${cellPadding} py-2 truncate max-w-[300px] ${h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量') ? 'text-center font-mono' : ''}`}>
-                      {h === '状态' || h === '是否生效' || h === '发布状态' || h === '完成状态' || h === '批注确认状态' ? (
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-tight shadow-sm ${
-                          row[h] === '生效' || row[h] === '已完成' || row[h] === '已发布' 
-                          ? 'bg-[#f6ffed] text-[#52c41a] border border-[#b7eb8f]' 
-                          : 'bg-[#fff1f0] text-[#ff4d4f] border border-[#ffa39e]'
-                        }`}>
-                          {row[h]}
-                        </span>
-                      ) : row[h]}
-                    </td>
-                  ))}
+                  <td className={`${cellPadding} py-2 text-center font-medium text-slate-400 font-mono`}>{(currentPage - 1) * pageSize + idx + 1}</td>
+                  {config.headers.map(h => {
+                    const isNum = h.includes('数') || h.includes('值') || h.includes('率') || h.includes('量');
+                    const isMono = isNum || h.includes('时间') || h.includes('日期') || h.includes('文号') || h.toLowerCase().includes('id');
+                    return (
+                      <td key={h} className={`${cellPadding} py-2 truncate max-w-[300px] ${isNum ? 'text-center' : ''} ${isMono ? 'font-mono' : ''}`}>
+                        {h === '状态' || h === '是否生效' || h === '发布状态' || h === '完成状态' || h === '批注确认状态' ? (
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-tight shadow-sm ${
+                            row[h] === '生效' || row[h] === '已完成' || row[h] === '已发布' 
+                            ? 'bg-[#f6ffed] text-[#52c41a] border border-[#b7eb8f]' 
+                            : 'bg-[#fff1f0] text-[#ff4d4f] border border-[#ffa39e]'
+                          }`}>
+                            {row[h]}
+                          </span>
+                        ) : row[h]}
+                      </td>
+                    );
+                  })}
                   <td className={`${cellPadding} py-2 text-center sticky right-0 shadow-[-10px_0_15px_rgba(0,0,0,0.03)] ${idx % 2 === 1 ? 'bg-[#F0F9FE]' : 'bg-white'}`}>
                     <div className="flex justify-center gap-4">
                       <button className="text-[#1890ff] hover:text-blue-700 flex items-center gap-1 font-bold transition-transform hover:scale-105">
@@ -516,7 +521,7 @@ const App = () => {
             {[1, 2, 3, 4, 5, 6, 7].map(page => (
               <button 
                 key={page} 
-                className={`w-7 h-7 border rounded-md flex items-center justify-center text-[13px] font-medium transition-all ${
+                className={`w-7 h-7 border rounded-md flex items-center justify-center text-[13px] font-medium transition-all font-mono ${
                   page === 1 
                     ? 'bg-[#1890ff] text-white border-[#1890ff]' 
                     : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-500'
