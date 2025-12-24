@@ -262,9 +262,9 @@ const DataOverview = ({ activeTab, onToggleFilter, isFilterOpen, onAdd }: { acti
         </div>
         <div className={`flex items-center ${isWorkDaily ? 'gap-6' : 'gap-14'} shrink-0`}>
           {data.map(([label, val, color]) => (
-            <div key={label} className={`flex ${isWorkDaily ? 'flex-row items-baseline gap-1' : 'flex-col justify-center'} whitespace-nowrap`}>
-              <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{label}{isWorkDaily ? '：' : ''}</span>
-              <span className={`${isWorkDaily ? 'text-base' : 'text-xl'} font-bold font-mono leading-tight`} style={{ color }}>{val}</span>
+            <div key={label} className="flex flex-row items-baseline gap-2 whitespace-nowrap">
+              <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{label}：</span>
+              <span className="text-lg font-bold font-mono leading-tight" style={{ color }}>{val}</span>
             </div>
           ))}
         </div>
